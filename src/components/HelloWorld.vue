@@ -24,8 +24,10 @@ import readXlsxFile from 'read-excel-file'
 import audits from '../data/audit-plan-import.txt'
 import PouchDB from 'pouchdb'
 
+const dbName = 'auditplantemplate'
+
 // var db = new PouchDB('kittens')
-var db = new PouchDB('http://admin:admin@localhost:5984/kittens');
+var db = new PouchDB(`http://admin:admin@localhost:5984/${dbName}`);
 
 
 export default {
@@ -43,17 +45,16 @@ export default {
         let xlsxfile = event.target.files ? event.target.files[0] : null;
         var cnt = 0
         readXlsxFile(xlsxfile).then((rows) => {
-          const year = rows[0][2]
+          const year = this.startYear(rows[0])
           var records = []
           rows.forEach(element => {
-            var record = { Item: element[0],  AuditPerQtr: element[1], Year: this.startYear(element), Month: element[2], Week: element[3], Date: element[4], StartDate: this.startDate(element), EndDate: this.endDate(element), Municipality: element[5], RegisteringAuthority: element[6], Days: element[7], AuditType: element[8], AuditOfficer: element[9]}
+            var record = { Item: element[0],  AuditPerQtr: element[1], Year: year, Month: element[2], Week: element[3], Date: element[4], StartDate: this.startDate(element), EndDate: this.endDate(element), Municipality: element[5], RegisteringAuthority: element[6], Days: element[7], AuditType: element[8], AuditOfficer: element[9]}
             records.push(record)
             cnt++
           })
           console.log(records[0])
           db.bulkDocs(records)
           .then(response => {
-            console.info(response)
           })
           .catch(err => {
             console.log(' ERROR: ', err)
